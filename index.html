@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global StatusTracker - Independent Map</title>
+  
+  <!-- Leaflet CSS (Styles for the Map) -->
+  <link rel="stylesheet" href="https://unpkg.com" />
+  
+  <!-- Tailwind CSS (Styles for the Header and Badges) -->
+  <script src="https://jsdelivr.net"></script>
+
+  <!-- React and Babel (Runs React directly inside Chrome) -->
+  <script src="https://unpkg.com" crossorigin></script>
+  <script src="https://unpkg.com" crossorigin></script>
+  <script src="https://unpkg.com"></script>
+
+  <style>
+    body, html, #root {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+    /* Fixed map sizing to fill the viewport below the header */
+    #map-container {
+      height: calc(100vh - 76px);
+      width: 100%;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 overflow-hidden">
+
+  <div id="root"></div>
+
+  <!-- React App Code Script -->
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Hardcoded Locations List (Acts as your local database)
+    const mockLocations = [
+      { id: 1, name: "Seattle Central Branch", lat: 47.6062, lng: -122.3321 },
+      { id: 2, name: "Chicago Loop Branch", lat: 41.8781, lng: -87.6298 },
+      { id: 3, name: "Times Square NYC Branch", lat: 40.7580, lng: -73.9855 },
+      { id: 4, name: "Miami Beach Branch", lat: 25.7907, lng: -80.1300 },
+      { id: 5, name: "Los Angeles Downtown Branch", lat: 34.0407, lng: -118.2468 },
+      { id: 6, name: "London Bridge Terminal", lat: 51.5074, lng: -0.1278 },
+      { id: 7, name: "Tokyo Shibuya Station", lat: 35.6580, lng: 139.7016 }
+    ];
+
+    function App() {
+      const [locations, setLocations] = useState([]);
+      const [stats, setStats] = useState({ total: 0, broken: 0 });
+
+      useEffect(() => {
+        // Simulates real-time tracking by randomly setting up 'operational' or 'broken' status
+        const generatedData = mockLocations.map(loc => ({
+          ...loc,
+          status: Math.random() > 0.35 ? 'operational' : 'broken'
+        }));
+
+        setLocations(generatedData);
+
+        const brokenCount = generatedData.filter(l => l.status === 'broken').length;
+        setStats({ total: generatedData.length, broken: brokenCount });
+
+        // Initialize Leaflet Map directly on the DOM after state updates
+        setTimeout(() => {
+          const map = L.map('map-container').setView([35, -40], 3); // Centered globally
+
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>'
+          }).addTo(map);
+
+          // Render Custom Styled Dot Markers (McBroken style)
+          generatedData.forEach(item => {
+            const color = item.status === 'operational' ? '#48bb78' : '#f56565';
+            
+            const customIcon = new L.DivIcon({
+              html: `<span style="background-color: ${color}; width: 14px; height: 14px; display: block; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 4px rgba(0,0,0,0.4);"></span>`,
+              className: 'custom-marker',
+              iconSize: [14, 14]
+            });
+
+            const popupContent = `
+              <div style="text-align: center; padding: 4px;">
+                <h3 style="margin: 0 0 6px 0; font-weight: bold; font-size: 14px;">${item.name}</h3>
+                <span style="background-color: ${color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block;">
+                  ${item.status.toUpperCase()}
+                </span>
+              </div>
+            `;
+
+            L.marker([item.lat, item.lng], { icon: customIcon })
+              .bindPopup(popupContent)
+              .addTo(map);
+          });
+        }, 100);
+      }, []);
+
+      const failureRate = stats.total > 0 ? ((stats.broken / stats.total) * 100).toFixed(1) : 0;
+
+      return (
+        <div class="flex flex-col h-screen w-full">
+          {/* Top Bar Header Area */}
+          <header class="bg-slate-900 text-white px-8 py-4 flex justify-between items-center shadow-lg z-50">
+            <div>
+              <h1 class="text-xl font-bold tracking-tight">🌍 Global StatusTracker</h1>
+              <p class="text-xs text-slate-400">Independent standalone file • Inspired by McBroken</p>
+            </div>
+            <div class="text-sm">
+              Global Failure Rate: <strong class="text-red-400 font-extrabold text-base ml-1">{failureRate}%</strong>
+            </div>
+          </header>
+
+          {/* Interactive World Map Anchor */}
+          <div id="map-container" class="grow"></div>
+        </div>
+      );
+    }
+
+    // Mount the built application onto Chrome's viewport
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
