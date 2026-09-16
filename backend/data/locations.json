@@ -1,0 +1,7 @@
+[
+  { "id": 1, "name": "Seattle Central Branch", "lat": 47.6062, "lng": -122.3321, "status": "operational" },
+  { "id": 2, "name": "Chicago Loop Branch", "lat": 41.8781, "lng": -87.6298, "status": "broken" },
+  { "id": 3, "name": "Times Square NYC Branch", "lat": 40.7580, "lng": -73.9855, "status": "operational" },
+  { "id": 4, "name": "Miami Beach Branch", "lat": 25.7907, "lng": -80.1300, "status": "broken" },
+  { "id": 5, "name": "Los Angeles Downtown Branch", "lat": 34.0407, "lng": -118.2468, "status": "operational" }
+]
